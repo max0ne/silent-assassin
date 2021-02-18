@@ -27,7 +27,7 @@ $ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --role=roles/container.admin
 
 gcloud iam service-accounts keys create key.json \
-  --iam-account ${$SERVICE_ACCOUNT_EMAIL}
+  --iam-account ${SERVICE_ACCOUNT_EMAIL}
 
 ```
 Keep the `key.json` file safely. We have to use the content of the file as value for parameter `secret.googleServiceAccountKeyfileJson` in helm chart.
