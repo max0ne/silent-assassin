@@ -14,7 +14,9 @@ type ExpiryTestData struct {
 	CreationTime       time.Time
 	EligibleWLs        []TimeSpan
 	WhitelistIntervals string
+	Error              string
 }
+
 type TimeSpan struct {
 	Start time.Time
 	End   time.Time
@@ -76,7 +78,7 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 			WhitelistIntervals: "00:00-06:00,12:00-14:00",
 			EligibleWLs: []TimeSpan{
 				{
-					Start: parseTime("Mon, 22 Jun 2020 00:40:00 +0000"),
+					Start: parseTime("Mon, 22 Jun 2020 01:40:00 +0000"),
 					End:   parseTime("Mon, 22 Jun 2020 06:00:00 +0000"),
 				},
 				{
@@ -85,7 +87,7 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 				},
 				{
 					Start: parseTime("Mon, 23 Jun 2020 00:00:00 +0000"),
-					End:   parseTime("Mon, 23 Jun 2020 00:40:00 +0000"),
+					End:   parseTime("Mon, 23 Jun 2020 00:30:00 +0000"),
 				},
 			},
 		},
@@ -110,12 +112,12 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 			WhitelistIntervals: "17:00-00:00",
 			EligibleWLs: []TimeSpan{
 				{
-					Start: parseTime("Thu, 18 Feb 2021 18:58:52 +0000"),
+					Start: parseTime("Thu, 18 Feb 2021 19:58:52 +0000"),
 					End:   parseTime("Thu, 19 Feb 2021 00:00:00 +0000"),
 				},
 				{
 					Start: parseTime("Thu, 19 Feb 2021 17:00:00 +0000"),
-					End:   parseTime("Thu, 19 Feb 2021 18:58:52 +0000"),
+					End:   parseTime("Thu, 19 Feb 2021 18:48:52 +0000"),
 				},
 			},
 		},
@@ -125,8 +127,8 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 			WhitelistIntervals: "00:00-00:00",
 			EligibleWLs: []TimeSpan{
 				{
-					Start: parseTime("Thu, 18 Feb 2021 18:58:52 +0000"),
-					End:   parseTime("Thu, 19 Feb 2021 18:58:52 +0000"),
+					Start: parseTime("Thu, 18 Feb 2021 19:58:52 +0000"),
+					End:   parseTime("Thu, 19 Feb 2021 18:48:52 +0000"),
 				},
 			},
 		},
@@ -136,8 +138,8 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 			WhitelistIntervals: "01:00-01:00",
 			EligibleWLs: []TimeSpan{
 				{
-					Start: parseTime("Thu, 18 Feb 2021 01:00:00 +0000"),
-					End:   parseTime("Thu, 19 Feb 2021 01:00:00 +0000"),
+					Start: parseTime("Thu, 18 Feb 2021 02:00:00 +0000"),
+					End:   parseTime("Thu, 19 Feb 2021 00:50:00 +0000"),
 				},
 			},
 		},
@@ -148,13 +150,21 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 			EligibleWLs: []TimeSpan{
 				{
 					Start: parseTime("Thu, 18 Feb 2021 02:00:00 +0000"),
-					End:   parseTime("Thu, 18 Feb 2021 02:01:00 +0000"),
-				},
-				{
-					Start: parseTime("Thu, 18 Feb 2021 03:00:00 +0000"),
-					End:   parseTime("Thu, 18 Feb 2021 03:01:00 +0000"),
+					End:   parseTime("Thu, 18 Feb 2021 03:00:00 +0000"),
 				},
 			},
+		},
+		{
+			Name:               "validate minNodeTTL",
+			CreationTime:       parseTime("Thu, 18 Feb 2021 01:00:00 +0000"),
+			WhitelistIntervals: "01:00-02:00",
+			Error:              "Cannot find a date",
+		},
+		{
+			Name:               "validate drainTimeout",
+			CreationTime:       parseTime("Thu, 18 Feb 2021 01:00:00 +0000"),
+			WhitelistIntervals: "00:50-01:00",
+			Error:              "Cannot find a date",
 		},
 		{
 			Name:               "duplicated whitelist 1",
@@ -173,7 +183,7 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 			WhitelistIntervals: "02:00-03:00,01:00-04:00",
 			EligibleWLs: []TimeSpan{
 				{
-					Start: parseTime("Thu, 18 Feb 2021 01:00:00 +0000"),
+					Start: parseTime("Thu, 18 Feb 2021 02:00:00 +0000"),
 					End:   parseTime("Thu, 18 Feb 2021 04:00:00 +0000"),
 				},
 			},
@@ -196,6 +206,12 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 						Annotations:       map[string]string{"node.alpha.kubernetes.io/ttl": "0"}}}
 
 				saExpTimeString, err := ss.getExpiryTimestamp(nodeToBeAnnotated)
+				if testInput.Error != "" {
+					suite.Assert().NotNilf(err, "expect err to be %s but got expire time %s", testInput.Error, saExpTimeString)
+					suite.Assert().Contains(err.Error(), testInput.Error)
+
+					return
+				}
 				suite.Assert().NoError(err)
 
 				saExpTime, err := time.Parse(time.RFC1123Z, saExpTimeString)

@@ -20,14 +20,18 @@ type spotterService struct {
 	kubeClient         k8s.IKubernetesClient
 	whiteListIntervals *timespanset.Set
 	notifier           notifier.INotifierClient
+	minNodeTTL         time.Duration
+	drainTimeout       time.Duration
 }
 
 func NewSpotterService(cp config.IProvider, zl logger.IZapLogger, kc k8s.IKubernetesClient, nf notifier.INotifierClient) spotterService {
 	ss := spotterService{
-		cp:         cp,
-		logger:     zl,
-		kubeClient: kc,
-		notifier:   nf,
+		cp:           cp,
+		logger:       zl,
+		kubeClient:   kc,
+		notifier:     nf,
+		minNodeTTL:   cp.GetDuration(config.SpotterMinNodeTTL),
+		drainTimeout: cp.GetDuration(config.KillerDrainingTimeoutWhenNodeExpired),
 	}
 	ss.initWhitelist()
 	return ss

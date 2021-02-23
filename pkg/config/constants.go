@@ -11,8 +11,8 @@ const NodeSelectors = "label_selectors"
 const ExpiryTimeAnnotation = "silent-assassin/expiry-time"
 
 const SpotterPollInterval = "spotter.poll_interval"
-
 const SpotterWhiteListIntervalHours = "spotter.white_list_interval_hours"
+const SpotterMinNodeTTL = "spotter.min_node_ttl"
 
 const KillerPollInterval = "killer.poll_interval"
 const KillerDrainingTimeoutWhenNodeExpired = "killer.draining_timeout_when_node_expired"

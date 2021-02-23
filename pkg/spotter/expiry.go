@@ -105,15 +105,19 @@ func (ss *spotterService) getExpiryTimestamp(node v1.Node) (string, error) {
 	ss.logger.Debug(fmt.Sprintf("GetExpiryTime : Node = %v Created time = [ %v ] Created Time in UTC = [ %v ]", node.Name, node.GetCreationTimestamp(), creationTsUTC))
 
 	// truncate year/month/day part of creation and expiration time to be on the same day of whitelist intervals
-	projectedCT := truncateTime(creationTsUTC)
-	projectedET := projectedCT.Add(24 * time.Hour)
-	ss.logger.Debug(fmt.Sprintf("GetExpiryTime : Node = %v Projected CT = [ %v ] Projected ExpiryTime = [ %v ]", node.Name, projectedCT, projectedET))
+	projectedCreation := truncateTime(creationTsUTC)
+	projectedExpiry := projectedCreation.Add(24 * time.Hour)
+	projectedExpireBegin := projectedCreation.Add(ss.minNodeTTL)
+	projectedExpireEnd := projectedExpiry.Add(-ss.drainTimeout)
+
+	ss.logger.Debug(fmt.Sprintf("GetExpiryTime : Node = %v Projected CT = [ %v ] Projected ExpiryTime = [ %v ] Expiry Begin [ %v ] Expiry End [ %v ]",
+		node.Name, projectedCreation, projectedExpiry, projectedExpireBegin, projectedExpireEnd))
 
 	// enumerate every time interval that falls between projected creation and projected node expiration
 	// all of these intervals are eligible candidates for killing this node
 	// randomly pick one of these interval and pick a random time in that interval as selected expieration of this node
 	eligibleExpiryTimes := make([]time.Time, 0)
-	ss.whiteListIntervals.IntervalsBetween(projectedCT, projectedET, func(start, end time.Time) bool {
+	ss.whiteListIntervals.IntervalsBetween(projectedExpireBegin, projectedExpireEnd, func(start, end time.Time) bool {
 		expiryTime := randomTimeBetween(start, end)
 		eligibleExpiryTimes = append(eligibleExpiryTimes, expiryTime)
 		ss.logger.Debug(fmt.Sprintf("GetExpiryTime : [Eligible Interval] Node = %v start = [ %v ], end = [ %v ], elegibleWLIntervals = [ %v ]", node.Name, start, end, eligibleExpiryTimes))
@@ -129,7 +133,8 @@ func (ss *spotterService) getExpiryTimestamp(node v1.Node) (string, error) {
 	ss.logger.Debug(fmt.Sprintf("GetExpiryTime : Node = %v elegibleWLIntervals = %v, saExpirtyTime = [ %v ]", node.Name, eligibleExpiryTimes, saExpirtyTime))
 
 	// project this expiration time back to the day of node creation
-	finalexp := creationTsUTC.Add(saExpirtyTime.Sub(projectedCT))
+	ttl := saExpirtyTime.Sub(projectedCreation)
+	finalexp := creationTsUTC.Add(ttl)
 
 	actualExpiry := creationTsUTC.Add(24 * time.Hour)
 	if finalexp.After(actualExpiry) {

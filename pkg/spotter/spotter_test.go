@@ -36,10 +36,12 @@ func (suit *SpotterTestSuite) SetupTest() {
 
 func (suit *SpotterTestSuite) defaultConfigValues() map[string]interface{} {
 	return map[string]interface{}{
-		config.LogLevel:                      "info",
-		config.SpotterWhiteListIntervalHours: "00:00-06:00,12:00-14:00",
-		config.SpotterPollInterval:           10 * time.Millisecond,
-		config.NodeSelectors:                 "cloud.google.com/gke-preemptible=true,label2=test",
+		config.LogLevel:                             "info",
+		config.SpotterWhiteListIntervalHours:        "00:00-06:00,12:00-14:00",
+		config.SpotterPollInterval:                  10 * time.Millisecond,
+		config.NodeSelectors:                        "cloud.google.com/gke-preemptible=true,label2=test",
+		config.SpotterMinNodeTTL:                    time.Hour,
+		config.KillerDrainingTimeoutWhenNodeExpired: 10 * time.Minute,
 	}
 }
 
