@@ -56,6 +56,7 @@ silent_assassin:
   spotter:
     poll_interval: 1s
     white_list_interval_hours: "06:30-08:30,18:30-00:30"
+    min_node_ttl: 1h
   killer:
     poll_interval: 1s
     draining_timeout_when_node_expired: 5m

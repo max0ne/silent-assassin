@@ -9,6 +9,7 @@ data:
     SPOTTER:
       POLL_INTERVAL: {{ .Values.silent_assassin.spotter.poll_interval }}
       WHITE_LIST_INTERVAL_HOURS: {{ .Values.silent_assassin.spotter.white_list_interval_hours }}
+      MIN_NODE_TTL: {{ .Values.silent_assassin.spotter.min_node_ttl }}
 
     KILLER:
       POLL_INTERVAL: {{ .Values.silent_assassin.killer.poll_interval }}
