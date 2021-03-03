@@ -152,6 +152,10 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 					Start: parseTime("Thu, 18 Feb 2021 02:00:00 +0000"),
 					End:   parseTime("Thu, 18 Feb 2021 03:00:00 +0000"),
 				},
+				{
+					Start: parseTime("Thu, 18 Feb 2021 03:00:00 +0000"),
+					End:   parseTime("Thu, 18 Feb 2021 03:01:00 +0000"),
+				},
 			},
 		},
 		{
@@ -185,6 +189,43 @@ func (suite *SpotterTestSuite) TestShouldSlotNodeExpTimeToOneOfElegibleWLInRando
 				{
 					Start: parseTime("Thu, 18 Feb 2021 02:00:00 +0000"),
 					End:   parseTime("Thu, 18 Feb 2021 04:00:00 +0000"),
+				},
+			},
+		},
+		{
+			Name:               "creation very close to whitelist",
+			CreationTime:       parseTime("Thu, 18 Feb 2021 22:59:47 +0000"),
+			WhitelistIntervals: "17:00-0:00",
+			EligibleWLs: []TimeSpan{
+				{
+					Start: parseTime("Thu, 18 Feb 2021 23:59:47 +0000"),
+					End:   parseTime("Thu, 19 Feb 2021 00:00:00 +0000"),
+				},
+				{
+					Start: parseTime("Thu, 19 Feb 2021 17:00:00 +0000"),
+					End:   parseTime("Thu, 19 Feb 2021 22:54:47 +0000"),
+				},
+			},
+		},
+		{
+			Name:               "creation equal whitelist start",
+			CreationTime:       parseTime("Thu, 18 Feb 2021 16:00:00 +0000"),
+			WhitelistIntervals: "17:00-0:00",
+			EligibleWLs: []TimeSpan{
+				{
+					Start: parseTime("Thu, 18 Feb 2021 17:00:00 +0000"),
+					End:   parseTime("Thu, 19 Feb 2021 00:00:00 +0000"),
+				},
+			},
+		},
+		{
+			Name:               "creation equal whitelist end",
+			CreationTime:       parseTime("Thu, 18 Feb 2021 23:00:00 +0000"),
+			WhitelistIntervals: "17:00-0:00",
+			EligibleWLs: []TimeSpan{
+				{
+					Start: parseTime("Thu, 19 Feb 2021 17:00:00 +0000"),
+					End:   parseTime("Thu, 19 Feb 2021 22:55:00 +0000"),
 				},
 			},
 		},

@@ -79,9 +79,9 @@ func truncateTime(t time.Time) time.Time {
 
 // randomTimeBetween returns a timestamp between t1 and t2: [t1, t2)
 func randomTimeBetween(t1, t2 time.Time) time.Time {
-	minutes := int(t2.Sub(t1).Minutes())
-	randMinutes := rand.Intn(minutes)
-	return t1.Add(time.Duration(randMinutes * int(time.Minute)))
+	duration := int64(t2.Sub(t1))
+	ttl := rand.Int63n(duration)
+	return t1.Add(time.Duration(ttl))
 }
 
 func minTime(t1, t2 time.Time) time.Time {
